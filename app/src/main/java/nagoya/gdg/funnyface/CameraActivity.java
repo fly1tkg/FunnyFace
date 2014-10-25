@@ -1,6 +1,7 @@
 package nagoya.gdg.funnyface;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
@@ -36,6 +37,7 @@ public class CameraActivity extends Activity {
 	Activity act;
 	Context ctx;
     private TextView mTextView;
+    private int mState = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,6 @@ public class CameraActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-                mTextView.setText("変顔を撮影してください");
 			}
 		});
 
@@ -117,13 +118,44 @@ public class CameraActivity extends Activity {
 
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
-			new SaveImageTask().execute(data);
-			resetCam();
-			Log.d(TAG, "onPictureTaken - jpeg");
-		}
+            Log.d(TAG, "onPictureTaken - jpeg");
+
+            if (mState == 0) {
+                new SaveImageTask(true).execute(data);
+                mTextView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                mTextView.setText("変顔を撮影してください");
+                mState = 1;
+            } else {
+                new SaveImageTask(false).execute(data);
+                mTextView.setTextColor(getResources().getColor(android.R.color.black));
+                mTextView.setText("普通の顔を撮影してください");
+                mState = 0;
+            }
+            resetCam();
+        }
 	};
 
+    private File mNormalPhoto;
+
 	private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
+
+        ProgressDialog dialog;
+        boolean normal;
+
+
+        SaveImageTask(boolean normal) {
+            this.normal = normal;
+        }
+
+        @Override
+        protected void onPreExecute () {
+            if (!normal) {
+                dialog = new ProgressDialog(CameraActivity.this);
+                dialog.setMessage("変顔度を検出しています");
+                dialog.setCancelable(false);
+                dialog.show();
+            }
+        }
 
 		@Override
 		protected Void doInBackground(byte[]... data) {
@@ -133,7 +165,7 @@ public class CameraActivity extends Activity {
 			try {
 				File sdCard = Environment.getExternalStorageDirectory();
 				File dir = new File(sdCard.getAbsolutePath() + "/camtest");
-				dir.mkdirs();				
+				dir.mkdirs();
 
 				String fileName = String.format("%d.jpg", System.currentTimeMillis());
 				File outFile = new File(dir, fileName);
@@ -146,15 +178,29 @@ public class CameraActivity extends Activity {
 				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to " + outFile.getAbsolutePath());
 
 				refreshGallery(outFile);
+
+                if (normal) {
+                    mNormalPhoto = outFile;
+                } else {
+                    // TODO
+                    Thread.sleep(2000);
+                }
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
+			} catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
 			}
 			return null;
 		}
 
+        protected void onPostExecute (Void result) {
+            if (!normal) {
+                dialog.dismiss();
+            }
+        }
 	}
 }
 
