@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
@@ -200,6 +203,25 @@ public class CameraActivity extends Activity {
             if (!normal) {
                 dialog.dismiss();
             }
+        }
+
+        private void cropFace(File normalFace, File funnyFace) {
+            Bitmap faceBlack = BitmapFactory.decodeResource(getResources(), R.drawable.face_black);
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 2;
+
+            Bitmap normalOriginal = BitmapFactory.decodeFile(normalFace.getAbsolutePath(), options);
+            Bitmap normal = Bitmap.createScaledBitmap(normalOriginal, 400, 640, false);
+            normalOriginal.recycle();
+            Canvas c = new Canvas(normal);
+            c.drawBitmap(faceBlack, 0, 0, null);
+
+            Bitmap funnyOriginal = BitmapFactory.decodeFile(funnyFace.getAbsolutePath(), options);
+            Bitmap funny = Bitmap.createScaledBitmap(funnyOriginal, 400, 640, false);
+            funnyOriginal.recycle();
+            Canvas c1 = new Canvas(funny);
+            c1.drawBitmap(faceBlack, 0, 0, null);
         }
 	}
 }
