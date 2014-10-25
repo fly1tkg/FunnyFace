@@ -170,7 +170,7 @@ public class CameraActivity extends Activity {
             // Write to SD Card
             try {
                 File sdCard = Environment.getExternalStorageDirectory();
-                File dir = new File(sdCard.getAbsolutePath() + "/camtest");
+                File dir = new File(sdCard.getAbsolutePath() + "/funnyface");
                 dir.mkdirs();
 
                 String fileName = String.format("%d.jpg", System.currentTimeMillis());
