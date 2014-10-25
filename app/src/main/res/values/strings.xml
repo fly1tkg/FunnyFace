@@ -10,6 +10,6 @@
 
     <!-- Toast Messages -->
     <string name="camera_not_found">No camera harware found</string>
-    <string name="take_photo_help">Touch anywhere on screen to take picture</string>
+    <string name="take_photo_help">画面をタッチすると撮影できます</string>
 
 </resources>
