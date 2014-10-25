@@ -2,7 +2,6 @@ package nagoya.gdg.funnyface;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -14,10 +13,10 @@ import java.io.File;
  * Created by tkg on 2014/10/25.
  */
 public class FunnyFace {
-    private static final String U10MESSAGE = "";
-    private static final String U20MESSAGE = "";
-    private static final String U30MESSAGE = "";
-    private static final String U40MESSAGE = "";
+    private static final String U10MESSAGE = "変顔してください(怒)";
+    private static final String U20MESSAGE = "がんばったね(棒)";
+    private static final String U30MESSAGE = "わるくないんじゃない？？";
+    private static final String DAIMAOMESSAGE = "変顔大魔王降臨！";
 
     private Context mCtx;
     private int mScore;
@@ -46,9 +45,21 @@ public class FunnyFace {
 
     public AlertDialog getMessageDialog() {
         return new AlertDialog.Builder(mCtx)
-                .setMessage(String.format("あなたの変顔度は%dです!", mScore / 100000))
+                .setMessage(getMessage())
                 .setPositiveButton("OK", null)
                 .create();
+    }
+
+    private String getMessage() {
+        if (mScore < 1000000) {
+            return U10MESSAGE;
+        } else if (mScore < 2000000) {
+            return U20MESSAGE;
+        } else if (mScore < 3000000) {
+            return U30MESSAGE;
+        } else {
+            return DAIMAOMESSAGE;
+        }
     }
 
     private int convertGray(int dotColor) {
