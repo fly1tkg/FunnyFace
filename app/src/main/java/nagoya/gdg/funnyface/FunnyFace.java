@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.Image;
+import android.widget.ImageView;
 
 import java.io.File;
 
@@ -44,10 +46,20 @@ public class FunnyFace {
     }
 
     public AlertDialog getMessageDialog() {
-        return new AlertDialog.Builder(mCtx)
-                .setMessage(getMessage())
-                .setPositiveButton("OK", null)
-                .create();
+        AlertDialog.Builder builder = new AlertDialog.Builder(mCtx)
+                .setPositiveButton("OK", null);
+
+        if (mScore > 3000000) {
+            builder.setTitle("おめでとう！");
+
+            ImageView daimao = new ImageView(mCtx);
+            daimao.setImageResource(R.drawable.daimao);
+            builder.setView(daimao);
+        } else {
+            builder.setMessage(getMessage());
+        }
+
+        return builder.create();
     }
 
     private String getMessage() {
