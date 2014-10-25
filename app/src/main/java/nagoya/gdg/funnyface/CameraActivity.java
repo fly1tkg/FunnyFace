@@ -19,6 +19,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -33,6 +35,7 @@ public class CameraActivity extends Activity {
 	Camera camera;
 	Activity act;
 	Context ctx;
+    private TextView mTextView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,10 +46,11 @@ public class CameraActivity extends Activity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.main);
+        mTextView = (TextView) findViewById(R.id.textView);
 
 		preview = new Preview(this, (SurfaceView)findViewById(R.id.surfaceView));
 		preview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-		((FrameLayout) findViewById(R.id.layout)).addView(preview);
+		((RelativeLayout) findViewById(R.id.layout)).addView(preview);
 		preview.setKeepScreenOn(true);
 
 		preview.setOnClickListener(new OnClickListener() {
@@ -54,32 +58,11 @@ public class CameraActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				camera.takePicture(shutterCallback, rawCallback, jpegCallback);
+                mTextView.setText("変顔を撮影してください");
 			}
 		});
 
 		Toast.makeText(ctx, getString(R.string.take_photo_help), Toast.LENGTH_LONG).show();
-
-		//		buttonClick = (Button) findViewById(R.id.btnCapture);
-		//		
-		//		buttonClick.setOnClickListener(new OnClickListener() {
-		//			public void onClick(View v) {
-		////				preview.camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-		//				camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-		//			}
-		//		});
-		//		
-		//		buttonClick.setOnLongClickListener(new OnLongClickListener(){
-		//			@Override
-		//			public boolean onLongClick(View arg0) {
-		//				camera.autoFocus(new AutoFocusCallback(){
-		//					@Override
-		//					public void onAutoFocus(boolean arg0, Camera arg1) {
-		//						//camera.takePicture(shutterCallback, rawCallback, jpegCallback);
-		//					}
-		//				});
-		//				return true;
-		//			}
-		//		});
 	}
 
 	@Override
