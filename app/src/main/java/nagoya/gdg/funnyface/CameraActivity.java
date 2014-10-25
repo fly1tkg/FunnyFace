@@ -1,6 +1,7 @@
 package nagoya.gdg.funnyface;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -145,6 +146,7 @@ public class CameraActivity extends Activity {
 
         ProgressDialog dialog;
         boolean normal;
+        int result;
 
 
         SaveImageTask(boolean normal) {
@@ -186,48 +188,52 @@ public class CameraActivity extends Activity {
                 if (normal) {
                     mNormalPhoto = outFile;
                 } else {
-                    // TODO
-                    Thread.sleep(2000);
+                    result = check(mNormalPhoto, outFile);
                 }
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			} catch (InterruptedException e) {
-                e.printStackTrace();
             } finally {
 			}
 			return null;
 		}
 
-        protected void onPostExecute (Void result) {
+        protected void onPostExecute (Void v) {
             if (!normal) {
                 dialog.dismiss();
+                Log.d("", "result: " + result);
+                new AlertDialog.Builder(CameraActivity.this)
+                        .setMessage(String.format("あなたの変顔度は%dです!", result/100000))
+                        .setPositiveButton("OK", null)
+                        .show();
             }
         }
 
-        private void cropFace(File normalFace, File funnyFace) {
+        private int check(File normalFace, File funnyFace) {
             Bitmap faceBlack = BitmapFactory.decodeResource(getResources(), R.drawable.face_black);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 2;
 
             Bitmap normalOriginal = BitmapFactory.decodeFile(normalFace.getAbsolutePath(), options);
-            Bitmap normal = Bitmap.createScaledBitmap(normalOriginal, 400, 640, false);
+            Bitmap normal = Bitmap.createScaledBitmap(normalOriginal, faceBlack.getWidth(), faceBlack.getHeight(), false);
             normalOriginal.recycle();
             Canvas c = new Canvas(normal);
             c.drawBitmap(faceBlack, 0, 0, null);
 
             Bitmap funnyOriginal = BitmapFactory.decodeFile(funnyFace.getAbsolutePath(), options);
-            Bitmap funny = Bitmap.createScaledBitmap(funnyOriginal, 400, 640, false);
+            Bitmap funny = Bitmap.createScaledBitmap(funnyOriginal, faceBlack.getWidth(), faceBlack.getHeight(), false);
             funnyOriginal.recycle();
             Canvas c1 = new Canvas(funny);
             c1.drawBitmap(faceBlack, 0, 0, null);
+
+            return diffImages(normal, funny);
         }
 	}
 
     private int convertGray(int dotColor) {
-        float r = (float) Color.red(dotColor);
+        float r = (float)Color.red(dotColor);
         float g = (float)Color.green(dotColor);
         float b = (float)Color.blue(dotColor);
 
