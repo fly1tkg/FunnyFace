@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
@@ -224,6 +225,40 @@ public class CameraActivity extends Activity {
             c1.drawBitmap(faceBlack, 0, 0, null);
         }
 	}
+
+    private int convertGray(int dotColor) {
+        float r = (float) Color.red(dotColor);
+        float g = (float)Color.green(dotColor);
+        float b = (float)Color.blue(dotColor);
+
+        return (int)(r * 0.3 + g * 0.59 + b * 0.11);
+    }
+
+    public int diffImages(Bitmap image1, Bitmap image2) {
+
+        if (image1.getWidth()!=image2.getWidth() || image1.getHeight()!=image2.getHeight()) {
+            return -1;
+        }
+
+        int w = image1.getWidth();
+        int h = image1.getHeight();
+
+        int diff = 0;
+
+        for (int i = 0; i < w; i++) {
+            for (int j=0; j < h; j++) {
+                int dotColor1 = image1.getPixel(i, j);
+                int dotColor2 = image2.getPixel(i, j);
+
+                int grayColor1 = convertGray(dotColor1);
+                int grayColor2 = convertGray(dotColor2);
+
+                diff += Math.abs(grayColor1 - grayColor2);
+            }
+        }
+
+        return diff;
+    }
 }
 
 
