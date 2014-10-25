@@ -146,7 +146,7 @@ public class CameraActivity extends Activity {
 
         ProgressDialog dialog;
         boolean normal;
-        int result;
+        FunnyFace result;
 
 
         SaveImageTask(boolean normal) {
@@ -154,7 +154,7 @@ public class CameraActivity extends Activity {
         }
 
         @Override
-        protected void onPreExecute () {
+        protected void onPreExecute() {
             if (!normal) {
                 dialog = new ProgressDialog(CameraActivity.this);
                 dialog.setMessage("変顔度を検出しています");
@@ -163,107 +163,48 @@ public class CameraActivity extends Activity {
             }
         }
 
-		@Override
-		protected Void doInBackground(byte[]... data) {
-			FileOutputStream outStream = null;
+        @Override
+        protected Void doInBackground(byte[]... data) {
+            FileOutputStream outStream = null;
 
-			// Write to SD Card
-			try {
-				File sdCard = Environment.getExternalStorageDirectory();
-				File dir = new File(sdCard.getAbsolutePath() + "/camtest");
-				dir.mkdirs();
+            // Write to SD Card
+            try {
+                File sdCard = Environment.getExternalStorageDirectory();
+                File dir = new File(sdCard.getAbsolutePath() + "/camtest");
+                dir.mkdirs();
 
-				String fileName = String.format("%d.jpg", System.currentTimeMillis());
-				File outFile = new File(dir, fileName);
+                String fileName = String.format("%d.jpg", System.currentTimeMillis());
+                File outFile = new File(dir, fileName);
 
-				outStream = new FileOutputStream(outFile);
-				outStream.write(data[0]);
-				outStream.flush();
-				outStream.close();
+                outStream = new FileOutputStream(outFile);
+                outStream.write(data[0]);
+                outStream.flush();
+                outStream.close();
 
-				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to " + outFile.getAbsolutePath());
+                Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length + " to " + outFile.getAbsolutePath());
 
-				refreshGallery(outFile);
+                refreshGallery(outFile);
 
                 if (normal) {
                     mNormalPhoto = outFile;
                 } else {
-                    result = check(mNormalPhoto, outFile);
+                    result = new FunnyFace(CameraActivity.this, mNormalPhoto, outFile);
                 }
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             } finally {
-			}
-			return null;
-		}
+            }
+            return null;
+        }
 
-        protected void onPostExecute (Void v) {
+        protected void onPostExecute(Void v) {
             if (!normal) {
                 dialog.dismiss();
-                Log.d("", "result: " + result);
-                new AlertDialog.Builder(CameraActivity.this)
-                        .setMessage(String.format("あなたの変顔度は%dです!", result/100000))
-                        .setPositiveButton("OK", null)
-                        .show();
+                result.getMessageDialog().show();
             }
         }
-
-        private int check(File normalFace, File funnyFace) {
-            Bitmap faceBlack = BitmapFactory.decodeResource(getResources(), R.drawable.face_black);
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 2;
-
-            Bitmap normalOriginal = BitmapFactory.decodeFile(normalFace.getAbsolutePath(), options);
-            Bitmap normal = Bitmap.createScaledBitmap(normalOriginal, faceBlack.getWidth(), faceBlack.getHeight(), false);
-            normalOriginal.recycle();
-            Canvas c = new Canvas(normal);
-            c.drawBitmap(faceBlack, 0, 0, null);
-
-            Bitmap funnyOriginal = BitmapFactory.decodeFile(funnyFace.getAbsolutePath(), options);
-            Bitmap funny = Bitmap.createScaledBitmap(funnyOriginal, faceBlack.getWidth(), faceBlack.getHeight(), false);
-            funnyOriginal.recycle();
-            Canvas c1 = new Canvas(funny);
-            c1.drawBitmap(faceBlack, 0, 0, null);
-
-            return diffImages(normal, funny);
-        }
-	}
-
-    private int convertGray(int dotColor) {
-        float r = (float)Color.red(dotColor);
-        float g = (float)Color.green(dotColor);
-        float b = (float)Color.blue(dotColor);
-
-        return (int)(r * 0.3 + g * 0.59 + b * 0.11);
-    }
-
-    public int diffImages(Bitmap image1, Bitmap image2) {
-
-        if (image1.getWidth()!=image2.getWidth() || image1.getHeight()!=image2.getHeight()) {
-            return -1;
-        }
-
-        int w = image1.getWidth();
-        int h = image1.getHeight();
-
-        int diff = 0;
-
-        for (int i = 0; i < w; i++) {
-            for (int j=0; j < h; j++) {
-                int dotColor1 = image1.getPixel(i, j);
-                int dotColor2 = image2.getPixel(i, j);
-
-                int grayColor1 = convertGray(dotColor1);
-                int grayColor2 = convertGray(dotColor2);
-
-                diff += Math.abs(grayColor1 - grayColor2);
-            }
-        }
-
-        return diff;
     }
 }
 
